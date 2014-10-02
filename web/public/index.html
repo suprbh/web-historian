@@ -2,11 +2,21 @@
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="styles.css" />
+  <script src="basic-server.js"></script>
+  <script src="request-handler.js"></script>
 </head>
 <body>
   Enter a URL here:
-  <form method="POST">
+  <form method="POST" id="send">
     <input type="input" name="url"></input>
+    <input type="submit" name="submit" class="submit"/>
   </form>
+  <!--<script>
+  	$(function(){
+  		$submit = $("#send");
+  		$submit.on('submit', )
+
+  	});
+  </script>-->
 </body>
 </html>
