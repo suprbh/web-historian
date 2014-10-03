@@ -23,29 +23,26 @@ exports.initialize = function(pathsObj){
   });
 };
 
-exports.readListOfUrls = function(listArray){
+exports.readListOfUrls = function(callback){
 	// open file archives/sites.txt
 	// read each line '\n' delimited
 	// store into an array.
   var filename = exports.paths.list;
-  fs.exists(filename, function(exists){
-    if (exists){
-      fs.stat(filename, function(error, stats){
-        if(error){
-          console.log(error);
-          return;
-        }
-        fs.open(filename, 'r', function(error, fd){
-          var buffer = new Buffer(stats.size);
-          fs.read(fd, buffer, 0, buffer.length, null, function(error, bytesRead, buffer){
-            var data = buffer.toString( "utf8", 0, buffer.length );
-            console.log(data);
-            listArray = data;
-            fs.close(fd);
-          })
-        });
-      });
+  fs.stat(filename, function(error, stats){
+    if(error){
+      console.log(error);
+      return;
     }
+    fs.open(filename, 'r', function(error, fd){
+      var buffer = new Buffer(stats.size);
+      fs.read(fd, buffer, 0, buffer.length, null, function(error, bytesRead, buffer){
+        var data = buffer.toString( "utf8", 0, buffer.length );
+        var list = data.toString().trim().split('\n');
+        console.log("[archive:readListOfUrls]:list: "+list);
+        callback(list);
+        // fs.close(fd);
+      });
+    });
   });
 };
 
@@ -76,53 +73,47 @@ exports.addUrlToList = function(url){
 };
 
 exports.isURLArchived = function(url, path, callback){
-  console.log('[isURLArchived]: url', url);
+  console.log('[isURLArchived]: url', path+url);
   fs.readFile(path+url, function(err, data){
     if (err){
       console.log('[isURLArchived]: Cannot open file', url);
-      callback(false);
+      callback(false, url);
     } 
     else {
       console.log('[isURLArchived]: File already Archived');
-      callback(true);
+      callback(true, url);
     }
   });
 };
 
 exports.downloadUrls = function(url){
-  var destPath = exports.paths['archivedSites'] + url;
+  var destPath = exports.paths['archivedSites'] + '/'+url;
 
   options = {
-      host: url
-    , port: 8080
-    , path: '/'
+      host: url,
+      port: 8080,
+      path: '/'
   }
+  console.log('[downloadUrls]: options', options);
+  console.log('[downloadUrls]: download to: ', destPath);
 
-  var request = http.get(options, function(res){
+  var request = http.get('http://'+url, function(res){
     var data = ''
-    res.setEncoding('utf8')
+    res.setEncoding('utf8');
 
     res.on('data', function(chunk){
         data += chunk;
     });
-
     res.on('end', function(){
         fs.writeFile(destPath, data, 'utf8', function(err){
-            if (err) throw err
-            console.log('File saved.')
+            if (err) {
+              console.log("unable to download file to: ", destPath);
+            }
+            console.log('File saved.');
         });
     });
 
   });
-
-  // var file = fs.createWriteStream(url);
-  // var request = http.get(url, function(response){
-  //   response.pipe(url);
-  // });
-  // exports.addUrlToList(url);
 };
 
-exports.fileExists = function(url){
-
-};
 

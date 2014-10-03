@@ -11,15 +11,17 @@ var archive = require('../helpers/archive-helpers.js');
 exports.htmlfetcher = function(){
   console.log("[htmlfetcher]: Called");
   archive.readListOfUrls(function(list){
+    console.log("[htmlfetcher]: [list]: ", list);
     for (var i = list.length - 1; i >= 0; i--){
-      console.log('[htmlfetcher]: working on url: ', url);
-      if (fileExists(archive.paths['archivedSites'] + url) === false) {
-        console.log('[htmlfetcher]: downloading url', url);
-        // file is not already downloaded, so download it
-        archive.downloadUrls(list[i]);
-      }
-    }
-  });
+      // console.log('[htmlfetcher]: working on url: ', list[i]);
+      archive.isURLArchived('/'+list[i], archive.paths['archivedSites'], function(ret, url){
+        if (!ret){
+          console.log('[htmlfetcher]: downloading url', url);
+          archive.downloadUrls(url.substr(1));
+        }
+      }); // isURLArchived
+    }  // for loop
+  }); // readListOfUrls
 };
 
 exports.htmlfetcher();
